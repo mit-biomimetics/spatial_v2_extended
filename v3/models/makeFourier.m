@@ -6,16 +6,16 @@
 % helper for testing arm regressor and regressor derivative functions
 
 %% Inputs
-% [Name]       [Description]
-%  params       spline coefficients               
-%  w            base frequency (sin wt)
-%  t            times to sample 
+% [Name]       [Description]                      [Size]
+%  params       spline coefficients                2m*n    (parameter num * joints num)
+%  w            base frequency (sin wt)            1*1
+%  t            times to sample                    1*k     (1*desired number of frames)
 
 %% Outputs
-% [Name]       [Description]
-%  q            spline pos vector
-%  qdot         (optional) spline vel vector
-%  qddot        (optional) spline acc vector
+% [Name]       [Description]                      [Size]
+%  q            spline pos vector                  n*k
+%  qdot         (optional) spline vel vector       n*k
+%  qddot        (optional) spline acc vector       n*k
 
 %% Implementation
 function [q, qdot, qddot] = makeFourier(params, w, t, varargin)

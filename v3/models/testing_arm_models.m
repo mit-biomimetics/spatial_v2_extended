@@ -68,9 +68,10 @@ horizon          = 10;      % trajectory horizon
 base_frequency   = pi*0.3;  % Fourier trajectory base frequency
 sample_times      = linspace(0,horizon,num_sample);
 sample_interval  = horizon/num_sample;              % dt for numerical integration
-m         = 5;                       % num of trajectory coefs per joints
+m         = 5;                       % sets num of trajectory coefs per joints
 p_initial = rand(2*m,6) - 0.5;  % initial p
-% params is ordered [a_1, b_1, a_2, b_2, ..., a_m, b_m] for Fourier Series: a_k*sin(kwt) + b_k*cos(kwt)
+p_vec = p_initial(:); % turn p into column vector [p1;p2;p3;p4...]
+% params is ordered [a_1, b_1, a_2, b_2, ..., a_m, b_m]' for Fourier Series: a_k*sin(kwt) + b_k*cos(kwt)
 
 % Fourier trajectory generation with parameter p_initial
 [q, qd, qdd]    = makeFourier(p_initial, base_frequency, sample_times);
@@ -86,7 +87,7 @@ qdtest = qd(:,test_index);
 qddtest = qdd(:,test_index);
 
 dqtest = dq(:,:,test_index);
-dqdtest = dqd(:,:,test_index);
+dqdtest = dqd(:,:,test_index); 
 dqddtest = dqdd(:,:,test_index);
 
 model_to_use = model_abs;
