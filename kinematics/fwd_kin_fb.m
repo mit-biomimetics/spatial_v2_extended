@@ -1,9 +1,10 @@
-function [dim_fb,Xup]  = get_fb_dim(model,q)
+function [dim_fb,Xup]  = fwd_kin_fb(model,q)
 % this function provides the floating base dimensions and floating base
 % coordinates for a 3D or planar spatial model. The type of model is
 % determined by the field calle 'type' in the model structure. The value of
 % model.type must be a string 'planar' or '3D'. If no field type is
 % specified, the default is a 3D model.
+
 if isfield(model,'type')
     if strcmp(model.type,'planar')
         dim_fb = 3;
