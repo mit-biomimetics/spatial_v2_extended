@@ -29,6 +29,8 @@ end
 
 [dim_fb, Xup] = fwd_kin_fb(model,q);
 
+% TODO : this function could easily be generalized to a 1 quaternion-based floating base
+% joint (or eventually 1 euler-based floating base joints) by computing the forward kinematics properly and setting dim_fb = 1.
 %% Joints Forward Kinematics
 
 for i = (dim_fb + 1):model.NB
@@ -48,5 +50,3 @@ for i = 1:length(gc)
     pf(indx) = pfi;
 end
 Rf = Rfi;
-
-
