@@ -5,9 +5,22 @@ function [p_link,R_link,X0_link] = get_link_position( model, q, link_idx)
 % the given joint configuration "q".
 %% Initialization
 
+R_link  = cell(length(link_idx),1); 
+switch class(q)
+    case 'double'
+        p_link  = zeros(3*length(link_idx),1);
+    case 'casadi.SX'
+        p_link  = casadi.SX.sym('pf',3*length(link_idx),1);
+    case 'casadi.MX'
+        p_link  = casadi.MX(zeros(3*length(link_idx),1));
+    otherwise
+        error('Invalid variable type for "q"')
+end
+
 X0  = cell(model.NB,1);
-p0  = cell(model.NB,1);
 R0  = cell(model.NB,1);
+p0  = cell(model.NB,1);
+
 %% floating base forward kinematics
 
 if ~strcmp(model.fb_type,'eul')
@@ -32,7 +45,7 @@ end
 for i = 1:length(link_idx)
     indx = (3*i-2):(3*i);
     p_link(indx) = p0{link_idx(i)};
-    R_link(:,:,i) = R0{link_idx(i)};
+    R_link{i} = R0{link_idx(i)};
 end
 
 X0_link = {X0{link_idx}};
