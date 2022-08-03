@@ -4,14 +4,8 @@ function [pf,Rf] = get_gc_position( model, q, gc)
 % robot "model" in the given joint configuration "q".
 % The argument gc can be a list of ground contacts indexes. The pf will be
 % a vector of size 3*number of ground contact indices given
-%%
-if ~strcmp(model.fb_type,'eul')
-    error('get_gc_position only works with euler angle-based floating base joint')
-end
 
-[dim_fb, tr, rpy] = get_fb_dim(model,q);
-%%
-Xup = cell(model.NB,1);
+%% Initialization of variables
 X0  = cell(model.NB,1);
 switch class(q)
     case 'double'
@@ -27,18 +21,21 @@ switch class(q)
         error('Invalid variable type for "q"')
 end
 
-%% Forward Kinematics
-R_world_to_body = rpyToRotMat(rpy)';
-for i = 1:(dim_fb - 1)
-    Xup{i} = zeros(6,6);
+%% floating base forward kinematics
+
+if ~strcmp(model.fb_type,'eul')
+    error('get_gc_position only works with euler angle-based floating base joint')
 end
-Xup{dim_fb} = [R_world_to_body zeros(3,3);...
-    -R_world_to_body*skew(tr) R_world_to_body];
+
+[dim_fb, Xup] = fwd_kin_fb(model,q);
+
+%% Joints Forward Kinematics
 
 for i = (dim_fb + 1):model.NB
     [ XJ, ~ ] = jcalc( model.jtype{i}, q(i) );
     Xup{i} = XJ * model.Xtree{i};
 end
+
 X0{dim_fb} = Xup{dim_fb};
 
 for i = (dim_fb + 1):model.NB

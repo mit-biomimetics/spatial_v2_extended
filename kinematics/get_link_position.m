@@ -3,27 +3,20 @@ function [p_link,R_link,X0_link] = get_link_position( model, q, link_idx)
 % (in the world frame) of the origin of frame corresponding to the 
 % robot's link with index "link_idx" for the given robot "model" in 
 % the given joint configuration "q".
-%% Get floating base dimensions (for 3D model support)
-if ~strcmp(model.fb_type,'eul')
-    error('get_gc_position only works with euler angle-based floating base joint')
-end
-[dim_fb, tr, rpy] = get_fb_dim(model,q);
+%% Initialization
 
-%%
-Xup = cell(model.NB,1);
 X0  = cell(model.NB,1);
 p0  = cell(model.NB,1);
 R0  = cell(model.NB,1);
+%% floating base forward kinematics
 
-%% Forward Kinematics
-R_world_to_body = rpyToRotMat(rpy)';
-
-for i = 1:(dim_fb - 1)
-    Xup{i} = zeros(6,6);
+if ~strcmp(model.fb_type,'eul')
+    error('get_gc_position only works with euler angle-based floating base joint')
 end
 
-Xup{dim_fb} = [R_world_to_body zeros(3,3);...
-         -R_world_to_body*skew(tr) R_world_to_body];
+[dim_fb, Xup] = fwd_kin_fb(model,q);
+
+%% Joints Forward Kinematics
 
 for i = (dim_fb + 1):model.NB
     [ XJ, ~ ] = jcalc( model.jtype{i}, q(i) );
