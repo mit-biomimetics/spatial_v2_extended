@@ -7,16 +7,20 @@ function [pf,Rf] = get_gc_position( model, q, gc)
 
 %% Initialization of variables
 X0  = cell(model.NB,1);
+Rf = cell(length(gc),1); 
+
+[dim_fb, Xup, pos_idx] = fwd_kin_fb(model,q);
+nb_pos = length(pos_idx);
+% TODO : this function could easily be generalized to a 1 quaternion-based floating base
+% joint (or eventually 1 euler-based floating base joints) by computing the forward kinematics properly and setting dim_fb = 1.
+
 switch class(q)
     case 'double'
-        pf  = zeros(3*length(gc),1);
-        Rf  = zeros(3);
+        pf  = zeros(nb_pos*length(gc),1);
     case 'casadi.SX'
-        pf  = casadi.SX.sym('pf',3*length(gc),1);
-        Rf  = casadi.SX.sym('Rf',3,3);
+        pf  = casadi.SX.sym('pf',nb_pos*length(gc),1);
     case 'casadi.MX'
-        pf  = casadi.MX(zeros(3*length(gc),1));
-        Rf  = casadi.MX(zeros(3,3));
+        pf  = casadi.MX(zeros(nb_pos*length(gc),1));
     otherwise
         error('Invalid variable type for "q"')
 end
@@ -27,10 +31,8 @@ if ~strcmp(model.fb_type,'eul')
     error('get_gc_position only works with euler angle-based floating base joint')
 end
 
-[dim_fb, Xup] = fwd_kin_fb(model,q);
 
-% TODO : this function could easily be generalized to a 1 quaternion-based floating base
-% joint (or eventually 1 euler-based floating base joints) by computing the forward kinematics properly and setting dim_fb = 1.
+
 %% Joints Forward Kinematics
 
 for i = (dim_fb + 1):model.NB
@@ -45,8 +47,8 @@ for i = (dim_fb + 1):model.NB
 end
 
 for i = 1:length(gc)
-    indx = (3*i-2):(3*i);
+    indx = (nb_pos*i-(nb_pos-1)):(nb_pos*i);
     [Rfi,pfi] = plux(model.gc_X{gc(i)} * X0{model.gc_parent(gc(i))}); % origin to foot translation, world coordinates
-    pf(indx) = pfi;
+    pf(indx) = pfi(pos_idx);
 end
 Rf = Rfi;
