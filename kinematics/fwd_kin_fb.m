@@ -1,4 +1,4 @@
-function [dim_fb,Xup, out_pos_dim]  = fwd_kin_fb(model,q)
+function [dim_fb,Xup, out_pos_dim, R_world_to_body, rpy]  = fwd_kin_fb(model,q)
 % this function provides the floating base dimensions and floating base
 % coordinates for a 3D or planar spatial model. The type of model is
 % determined by the field calle 'type' in the model structure. The value of
