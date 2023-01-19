@@ -32,7 +32,7 @@ for i = 1:model.NB
   
   Ic{i} = model.I{i};
   hc{i} = Ic{i} * v{i};
-  KE(i) = 0.5 * v{i}.' * hc{i};
+  KE{i} = 0.5 * v{i}.' * hc{i};
   if model.has_rotor(i)
       [ XJ_rotor, S_rotor{i} ] = jcalc( model.jtype_rotor{i}, q{i}*model.gr{i} );
       S_rotor{i} = S_rotor{i} * model.gr{i};
@@ -44,7 +44,7 @@ for i = 1:model.NB
           v_rotor{i} = Xup_rotor{i}*v{model.parent(i)} + vJ_rotor;
       end
       h_rotor{i} = model.I_rotor{i}*v_rotor{i};
-      KE(i) = KE(i) + 1/2*h_rotor{i}.'*v_rotor{i};
+      KE{i} = KE{i} + 1/2*h_rotor{i}.'*v_rotor{i};
   end
 end
 
@@ -82,7 +82,7 @@ end
 
 [mass, cm] = mcI(ret.Itot);
 
-ret.KE = sum(KE);
+ret.KE = sum([KE{:}]);
 ret.PE = - mass * dot(cm,g);
 ret.mass = mass;
 ret.cm = cm;
