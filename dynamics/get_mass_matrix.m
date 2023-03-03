@@ -1,4 +1,4 @@
-function  [H,Ic] = get_mass_matrix( model, q)
+function  [H,Ic, IC] = get_mass_matrix( model, q)
 % Computes mass matrix (H) in the inverse dynamics formulation (assuming
 % the model treats its floating base as six 1DOF joints with euler angle 
 % convention for the orientation)
