@@ -13,6 +13,10 @@ function tau = rnea(model, q, qd, qdd, f_ext)
         error('get_mass_matrix only works with euler angle-based floating base joint')
     end
 
+    %% 2D or 3D
+    [dim_fb, Xup, pos_idx, S] = fwd_kin_fb(model, q);
+    nb_pos = length(pos_idx);
+
     switch class(q)
         case 'double'
             tau = zeros(model.NB, 1);
@@ -26,25 +30,13 @@ function tau = rnea(model, q, qd, qdd, f_ext)
 
     %% Forward Kinematics
     a_grav = [0 0 0 model.gravity]';
-    R_world_to_body = rpyToRotMat(q(4:6))';
 
-    for i = 1:5
-        Xup{i} = zeros(6, 6);
-        v{i} = zeros(6, 1);
-        a{i} = zeros(6, 1);
-        h{i} = zeros(6, 1);
-        f{i} = zeros(6, 1);
-    end
+    v{dim_fb} = S{dim_fb} * qd(1:dim_fb);
+    a{dim_fb} = Xup{dim_fb} * (-a_grav) + S{dim_fb} * qdd(1:dim_fb);
+    h{dim_fb} = model.I{dim_fb} * v{dim_fb};
+    f{dim_fb} = model.I{dim_fb} * a{dim_fb} + crf(v{dim_fb}) * h{dim_fb};
 
-    S{6} = eye(6);
-    Xup{6} = [R_world_to_body zeros(3, 3); ...
-                  -R_world_to_body * skew_spatial(q(1:3)) R_world_to_body];
-    v{6} = S{6} * qd(1:6);
-    a{6} = Xup{6} * (-a_grav) + S{6} * qdd(1:6);
-    h{6} = model.I{6} * v{6};
-    f{6} = model.I{6} * a{6} + crf(v{6}) * h{6};
-
-    for i = 7:model.NB
+    for i = (dim_fb + 1):model.NB
         [XJ, S{i}] = jcalc(model.jtype{i}, q(i));
         vJ = S{i} * qd(i);
         Xup{i} = XJ * model.Xtree{i};
@@ -55,12 +47,11 @@ function tau = rnea(model, q, qd, qdd, f_ext)
     end
 
     %% Backward Pass
-    for i = model.NB:-1:7
+    for i = model.NB:-1:(dim_fb + 1)
         p = model.parent(i);
         tau(i) = S{i}.' * f{i};
         f{p} = f{p} + Xup{i}.' * f{i};
     end
-
-    tau(1:6) = S{6}.' * f{6};
+    tau(1:dim_fb) = S{dim_fb}.' * f{dim_fb};
 
 end

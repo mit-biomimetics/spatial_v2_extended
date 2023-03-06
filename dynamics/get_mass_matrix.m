@@ -10,23 +10,19 @@ if ~strcmp(model.fb_type,'eul')
     error('get_mass_matrix only works with euler angle-based floating base joint')
 end
 
+%% 2D or 3D
+[dim_fb, Xup, pos_idx, S] = fwd_kin_fb(model, q);
+nb_pos = length(pos_idx);
+
 %% Forward Kinematics
-R_world_to_body = rpyToRotMat(q(4:6))';
-for i = 1:5
-    Xup{i} = zeros(6,6);
-end
-
-Xup{6} = [R_world_to_body zeros(3,3);...
-    -R_world_to_body*skew_spatial(q(1:3)) R_world_to_body];
-
-for i = 7:model.NB
+for i = (dim_fb + 1):model.NB
     [ XJ, S{i} ] = jcalc( model.jtype{i}, q(i) );
     Xup{i} = XJ * model.Xtree{i};
 end
 
 %% Composite Inertia
 IC = model.I;
-for i = model.NB:-1:7
+for i = model.NB:-1:(dim_fb + 1)
     IC{model.parent(i)} = IC{model.parent(i)} + Xup{i}'*IC{i}*Xup{i};
 end
 
@@ -35,32 +31,33 @@ switch class(q)
     case 'double'
         H = zeros(model.NB);
     case 'casadi.SX'
-        H = casadi.SX.sym('H',model.NB,model.NB);
+        H = casadi.SX.sym('H', model.NB, model.NB);
     case 'casadi.MX'
         H = casadi.MX(zeros(model.NB));
     otherwise
         error('Invalid variable type for "q"')
 end
 
-H(1:6,1:6) = IC{6};
 
-for i = 7:model.NB
+H(1:dim_fb,1:dim_fb) = S{dim_fb}' * IC{dim_fb} * S{dim_fb};
+
+for i = (dim_fb + 1):model.NB
     fh = IC{i} * S{i};
     H(i,i) = S{i}' * fh;
     
     fh = Xup{i}' * fh;
     j = model.parent(i);
-    while j > 6
+    while j > dim_fb
         H(i,j) = S{j}' * fh;
         H(j,i) = H(i,j);
         fh = Xup{j}' * fh;
         j = model.parent(j);
     end
     
-    H(1:6,i) = fh;
-    H(i,1:6) = fh';
+    H(1:dim_fb,i) = S{dim_fb}' * fh;
+    H(i,1:dim_fb) = fh' * S{dim_fb};
 end
 
 % Composite Rigid Body Inertia - Body frame
-U = [eye(6) zeros(6,model.NB-6)];
-Ic = U*H*U';
+U = [eye(dim_fb) zeros(dim_fb, model.NB - dim_fb)];
+Ic = U * H * U';
