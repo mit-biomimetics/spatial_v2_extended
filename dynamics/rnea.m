@@ -13,10 +13,6 @@ function tau = rnea(model, q, qd, qdd, f_ext)
         error('get_mass_matrix only works with euler angle-based floating base joint')
     end
 
-    %% 2D or 3D
-    [dim_fb, Xup, pos_idx, S] = fwd_kin_fb(model, q);
-    Xa = Xup;
-
     switch class(q)
         case 'double'
             tau = zeros(model.NB, 1);
@@ -27,6 +23,10 @@ function tau = rnea(model, q, qd, qdd, f_ext)
         otherwise
             error('Invalid variable type for "q"')
     end
+
+    %% 2D or 3D
+    [dim_fb, Xup, pos_idx, S] = fwd_kin_fb(model, q);
+    Xa = Xup;
 
     %% Forward Kinematics
     a_grav = [0 0 0 model.gravity]';
@@ -47,15 +47,21 @@ function tau = rnea(model, q, qd, qdd, f_ext)
         f{i} = model.I{i} * a{i} + crf(v{i}) * h{i};
     end
 
-    %% Apply External Forces
-    if length(f_ext) > 0
-        for i = dim_fb:model.NB
-            if length(f_ext{i}) > 0
-                Xa_force = [Xa{i}(1:3, 1:3) Xa{i}(4:6, 1:3); zeros(3, 3) Xa{i}(4:6, 4:6)];
-                f{i} = f{i} - Xa_force * f_ext{i};
+    if nargin == 5
+        %% Apply External Forces
+        if length(f_ext) > 0
+
+            for i = dim_fb:model.NB
+
+                if length(f_ext{i}) > 0
+                    Xa_force = [Xa{i}(1:3, 1:3) Xa{i}(4:6, 1:3); zeros(3, 3) Xa{i}(4:6, 4:6)];
+                    f{i} = f{i} - Xa_force * f_ext{i};
+                end
+
             end
+
         end
-    
+
     end
 
     %% Backward Pass
@@ -64,6 +70,7 @@ function tau = rnea(model, q, qd, qdd, f_ext)
         tau(i) = S{i}.' * f{i};
         f{p} = f{p} + Xup{i}.' * f{i};
     end
+
     tau(1:dim_fb) = S{dim_fb}.' * f{dim_fb};
 
 end
