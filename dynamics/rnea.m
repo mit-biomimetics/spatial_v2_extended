@@ -15,7 +15,7 @@ function tau = rnea(model, q, qd, qdd, f_ext)
 
     %% 2D or 3D
     [dim_fb, Xup, pos_idx, S] = fwd_kin_fb(model, q);
-    nb_pos = length(pos_idx);
+    Xa = Xup;
 
     switch class(q)
         case 'double'
@@ -40,10 +40,22 @@ function tau = rnea(model, q, qd, qdd, f_ext)
         [XJ, S{i}] = jcalc(model.jtype{i}, q(i));
         vJ = S{i} * qd(i);
         Xup{i} = XJ * model.Xtree{i};
+        Xa{i} = Xup{i} * Xa{model.parent(i)};
         v{i} = Xup{i} * v{model.parent(i)} + vJ;
         a{i} = Xup{i} * a{model.parent(i)} + S{i} * qdd(i) + crm(v{i}) * vJ;
         h{i} = model.I{i} * v{i};
         f{i} = model.I{i} * a{i} + crf(v{i}) * h{i};
+    end
+
+    %% Apply External Forces
+    if length(f_ext) > 0
+        for i = dim_fb:model.NB
+            if length(f_ext{i}) > 0
+                Xa_force = [Xa{i}(1:3, 1:3) Xa{i}(4:6, 1:3); zeros(3, 3) Xa{i}(4:6, 4:6)];
+                f{i} = f{i} - Xa_force * f_ext{i};
+            end
+        end
+    
     end
 
     %% Backward Pass
