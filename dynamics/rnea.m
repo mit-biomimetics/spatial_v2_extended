@@ -47,21 +47,17 @@ function tau = rnea(model, q, qd, qdd, f_ext)
         f{i} = model.I{i} * a{i} + crf(v{i}) * h{i};
     end
 
+    %% Apply External Forces
     if nargin == 5
-        %% Apply External Forces
         if length(f_ext) > 0
-
             for i = dim_fb:model.NB
 
                 if length(f_ext{i}) > 0
                     Xa_force = [Xa{i}(1:3, 1:3) Xa{i}(4:6, 1:3); zeros(3, 3) Xa{i}(4:6, 4:6)];
                     f{i} = f{i} - Xa_force * f_ext{i};
                 end
-
             end
-
         end
-
     end
 
     %% Backward Pass
