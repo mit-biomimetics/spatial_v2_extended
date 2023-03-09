@@ -20,7 +20,6 @@ function J = plus_jacobian_fb(q_fb)
 
 end
 
-% TODO(@MatthewChignoli): Is there a better way to go from body omega to RPY rates?
 function B = Binv(rpy)
     % Generates the inverse of B matrix where the B matrix is used to convert
     % euler rates psidot, thetadot and phidot into angular velocities in world
