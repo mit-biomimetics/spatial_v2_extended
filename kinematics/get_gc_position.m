@@ -9,11 +9,17 @@ function [pf,Rf] = get_gc_position( model, q, gc)
 X0  = cell(model.NB,1);
 Rf = cell(length(gc),1); 
 
-[dim_fb, Xup, pos_idx] = fwd_kin_fb(model,q);
-nb_pos = length(pos_idx);
-% TODO : this function could easily be generalized to a 1 quaternion-based floating base
-% joint (or eventually 1 euler-based floating base joints) by computing the forward kinematics properly and setting dim_fb = 1.
+if strcmp(model.fb_type,'eul')
+    %% floating base forward kinematics
+    [NB_fb, Xup, pos_idx] = fwd_kin_fb(model,q);
+else
+    NB_fb = 1;
+    pos_idx = 1:3;
+    [ XJ, ~ ] = jcalc( model.jtype{1}, q );
+    Xup{1} = XJ * model.Xtree{1};
+end
 
+nb_pos = length(pos_idx);
 switch class(q)
     case 'double'
         pf  = zeros(nb_pos*length(gc),1);
@@ -25,24 +31,17 @@ switch class(q)
         error('Invalid variable type for "q"')
 end
 
-%% floating base forward kinematics
-
-if ~strcmp(model.fb_type,'eul')
-    error('get_gc_position only works with euler angle-based floating base joint')
-end
-
-
 
 %% Joints Forward Kinematics
 
-for i = (dim_fb + 1):model.NB
+for i = (NB_fb + 1):model.NB
     [ XJ, ~ ] = jcalc( model.jtype{i}, q(i) );
     Xup{i} = XJ * model.Xtree{i};
 end
 
-X0{dim_fb} = Xup{dim_fb};
+X0{NB_fb} = Xup{NB_fb};
 
-for i = (dim_fb + 1):model.NB
+for i = (NB_fb + 1):model.NB
     X0{i} = Xup{i} * X0{model.parent(i)}; % propagate xform from origin
 end
 
