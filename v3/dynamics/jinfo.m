@@ -22,6 +22,9 @@ switch code
   case 'SE3'
     nq = 16;
     nv = 6;
+  case 'eul_1body'
+    nq = 6;
+    nv = 6;
   otherwise
     error( 'unrecognised joint code ''%s''', code );
 end

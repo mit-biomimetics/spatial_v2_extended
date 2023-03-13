@@ -59,6 +59,14 @@ switch code
     R = T(1:3,1:3);
     p = T(1:3,4);
     Xj = [R zeros(3); skew(p)*R R];
+  case 'eul_1body'
+    tr = q(1:3);
+    rpy = q(4:6);
+    R_world_to_body = rpyToRotMat(rpy)';
+    Xj = [R_world_to_body zeros(3,3);...
+    -R_world_to_body*skew(tr) R_world_to_body];
+    S = eye(6);
+
   otherwise
     error( 'unrecognised joint code ''%s''', code );
 end
