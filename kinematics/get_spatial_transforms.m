@@ -1,4 +1,4 @@
-function Xup = get_link_position(model, q)
+function Xup = get_spatial_transforms(model, q)
 
     %% Initialization
     if ~strcmp(model.fb_type, 'eul')
