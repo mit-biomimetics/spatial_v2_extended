@@ -1,4 +1,4 @@
-function [pf,Rf] = get_gc_position( model, q, gc)
+function [pf, Rf, X0, Xup] = get_gc_position( model, q, gc)
 % pf = get_gc_position( model, q, gc) computes the position "pf" (in the 
 % world frame) of the ground contact point with index "gc" for the given
 % robot "model" in the given joint configuration "q".
@@ -11,7 +11,7 @@ Rf = cell(length(gc),1);
 
 if strcmp(model.fb_type,'eul')
     %% floating base forward kinematics
-    [NB_fb, Xup, pos_idx] = fwd_kin_fb(model,q);
+    [NB_fb, Xup, pos_idx] = fwd_kin_fb(model, q);
 else
     NB_fb = 1;
     pos_idx = 1:3;
@@ -33,9 +33,12 @@ end
 
 
 %% Joints Forward Kinematics
+if ~iscell(q) || ~iscell(qd)
+    [q] = confVecToCell(model,q);
+end
 
 for i = (NB_fb + 1):model.NB
-    [ XJ, ~ ] = jcalc( model.jtype{i}, q(i) );
+    [ XJ, ~ ] = jcalc( model.jtype{i}, q{i} ); % HAVE TO USE [q_cell, v_cell, vd_cell, vd2_cell] = confVecToCell(model,q,v,vd, vd2)
     Xup{i} = XJ * model.Xtree{i};
 end
 
