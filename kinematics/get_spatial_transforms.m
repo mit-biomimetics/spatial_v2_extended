@@ -1,18 +1,22 @@
 function Xup = get_spatial_transforms(model, q)
 
     %% Initialization
-    if ~strcmp(model.fb_type, 'eul')
-        error('get_gc_position only works with euler angle-based floating base joint')
-    end
 
-    %% floating base forward kinematics
-    [dim_fb, Xup, pos_idx] = fwd_kin_fb(model, q);
-    nb_pos = length(pos_idx);
-
+    if strcmp(model.fb_type,'eul')
+        %% floating base forward kinematics
+        [Xup] = fwd_kin_fb(model, q);
+    else
+        [ XJ, ~ ] = jcalc( model.jtype{1}, q );
+        Xup{1} = XJ * model.Xtree{1};
+    end   
+    
     %% Joints Forward Kinematics
-    for i = (dim_fb + 1):model.NB
-        [XJ, ~] = jcalc(model.jtype{i}, q(i));
+    if ~iscell(q) || ~iscell(qd)
+        [q] = confVecToCell(model,q);
+    end
+    
+    for i = (model.fb_dim + 1):model.NB
+        [ XJ, ~ ] = jcalc( model.jtype{i}, q{i} ); % HAVE TO USE [q_cell, v_cell, vd_cell, vd2_cell] = confVecToCell(model,q,v,vd, vd2)
         Xup{i} = XJ * model.Xtree{i};
     end
-
 end

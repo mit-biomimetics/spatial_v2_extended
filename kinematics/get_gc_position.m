@@ -9,48 +9,29 @@ function [pf, Rf, X0, Xup] = get_gc_position( model, q, gc)
 X0  = cell(model.NB,1);
 Rf = cell(length(gc),1); 
 
-if strcmp(model.fb_type,'eul')
-    %% floating base forward kinematics
-    [NB_fb, Xup, pos_idx] = fwd_kin_fb(model, q);
-else
-    NB_fb = 1;
-    pos_idx = 1:3;
-    [ XJ, ~ ] = jcalc( model.jtype{1}, q );
-    Xup{1} = XJ * model.Xtree{1};
-end
+Xup = get_spatial_transforms(model, q);
+nb_pos = length(model.pos_idx);
 
-nb_pos = length(pos_idx);
 switch class(q)
     case 'double'
         pf  = zeros(nb_pos*length(gc),1);
     case 'casadi.SX'
-        pf  = casadi.SX.sym('pf',nb_pos*length(gc),1);
+        pf  = casadi.SX('pf',nb_pos*length(gc),1);
     case 'casadi.MX'
-        pf  = casadi.MX(zeros(nb_pos*length(gc),1));
+        pf  = casadi.MX(nb_pos*length(gc), 1);
     otherwise
         error('Invalid variable type for "q"')
 end
 
+X0{model.fb_dim} = Xup{model.fb_dim};
 
-%% Joints Forward Kinematics
-if ~iscell(q) || ~iscell(qd)
-    [q] = confVecToCell(model,q);
-end
-
-for i = (NB_fb + 1):model.NB
-    [ XJ, ~ ] = jcalc( model.jtype{i}, q{i} ); % HAVE TO USE [q_cell, v_cell, vd_cell, vd2_cell] = confVecToCell(model,q,v,vd, vd2)
-    Xup{i} = XJ * model.Xtree{i};
-end
-
-X0{NB_fb} = Xup{NB_fb};
-
-for i = (NB_fb + 1):model.NB
+for i = (model.fb_dim + 1):model.NB
     X0{i} = Xup{i} * X0{model.parent(i)}; % propagate xform from origin
 end
 
 for i = 1:length(gc)
     indx = (nb_pos*i-(nb_pos-1)):(nb_pos*i);
     [Rfi,pfi] = plux(model.gc_X{gc(i)} * X0{model.gc_parent(gc(i))}); % origin to foot translation, world coordinates
-    pf(indx) = pfi(pos_idx);
+    pf(indx) = pfi(model.pos_idx);
 end
 Rf = Rfi;

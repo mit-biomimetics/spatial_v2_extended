@@ -11,9 +11,8 @@ if ~strcmp(model.fb_type,'eul')
 end
 
 %% 2D or 3D
-[dim_fb, Xup, pos_idx, S] = fwd_kin_fb(model, q);
-nb_pos = length(pos_idx);
-
+[Xup, S] = fwd_kin_fb(model, q);
+dim_fb = model.fb_dim;
 %% Forward Kinematics
 for i = (dim_fb + 1):model.NB
     [ XJ, S{i} ] = jcalc( model.jtype{i}, q(i) );
