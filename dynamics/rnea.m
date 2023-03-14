@@ -9,7 +9,7 @@ function tau = rnea(model, q, qd, qdd, f_ext)
     % omitted if there are no external forces.  The format of f_ext is
     % explained in the source code of apply_external_forces.
 
-    if ~strcmp(model.fb_type, 'eul')
+    if ~any(strcmp(model.fb_type,{'eul','planar'}))
         error('get_mass_matrix only works with euler angle-based floating base joint')
     end
 

@@ -1,7 +1,7 @@
 function qdd = aba(model, q, qd, tau, f_ext)
 
-    if ~strcmp(model.fb_type, 'eul')
-        error('get_mass_matrix only works with euler angle-based floating base joint')
+    if ~any(strcmp(model.fb_type,{'eul','planar'}))
+        error('aba only works with euler angle-based floating base joint')
     end
 
     switch class(q)

@@ -7,30 +7,24 @@ function [Xup, S]  = fwd_kin_fb(model,q)
 
 S = cell(model.NB,1);
 
-if isfield(model,'type')
-    if strcmp(model.type,'planar')
-        rpy = [0;q(3);0];
-        tr = [q(1);0;q(2)];
-        S{3} = [
-                0 0 0;
-                1 0 0;
-                0 0 0;
-                0 1 0;
-                0 0 0;
-                0 0 1
-                ];
-    elseif strcmp(model.type,'3D') % 3D floating base
-        rpy = q(4:6);
-        tr = q(1:3);
-        S{6} = eye(6);
-    else
-        error('type must be "planar" or "3D" ')
-    end
-else % 3D floating base
+if strcmp(model.fb_type, 'planar')
+    rpy = [0;q(3);0];
+    tr = [q(1);0;q(2)];
+    S{3} = [
+            0 0 0;
+            1 0 0;
+            0 0 0;
+            0 1 0;
+            0 0 0;
+            0 0 1];
+elseif strcmp(model.fb_type,'eul') % 3D floating base
     rpy = q(4:6);
     tr = q(1:3);
     S{6} = eye(6);
+else
+    error('fb type must be "planar" or "eul" ')
 end
+
 
 Xup = cell(model.NB, 1);
 for i = 1:(model.fb_dim - 1)

@@ -6,7 +6,7 @@ function  [H,Ic, IC] = get_mass_matrix( model, q)
 % @return H (model.NB x model.NB) - mass matrix (body frame)
 % @return Ic (6 x 6) - composite rigid body inertia (body frame)
 
-if ~strcmp(model.fb_type,'eul')
+if ~any(strcmp(model.fb_type,{'eul','planar'}))
     error('get_mass_matrix only works with euler angle-based floating base joint')
 end
 

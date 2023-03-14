@@ -2,7 +2,7 @@ function Xup = get_spatial_transforms(model, q)
 
     %% Initialization
 
-    if strcmp(model.fb_type,'eul')
+    if any(strcmp(model.fb_type,{'eul','planar'}))
         %% floating base forward kinematics
         [Xup] = fwd_kin_fb(model, q);
     else
