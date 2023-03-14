@@ -16,7 +16,7 @@ switch class(q)
     case 'double'
         pf  = zeros(nb_pos*length(gc),1);
     case 'casadi.SX'
-        pf  = casadi.SX('pf',nb_pos*length(gc),1);
+        pf  = casadi.SX(nb_pos*length(gc),1);
     case 'casadi.MX'
         pf  = casadi.MX(nb_pos*length(gc), 1);
     otherwise
