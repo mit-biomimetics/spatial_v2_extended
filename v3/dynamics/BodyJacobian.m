@@ -1,4 +1,4 @@
-function  J = BodyJacobian( model, q, body_num, Xend)
+function  J = BodyJacobian(model, q, body_num, Xend)
 
 if ~isfield(model,'nq')
     model = postProcessModel(model);
