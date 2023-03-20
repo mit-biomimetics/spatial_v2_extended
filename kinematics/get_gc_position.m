@@ -31,7 +31,10 @@ end
 
 for i = 1:length(gc)
     indx = (nb_pos*i-(nb_pos-1)):(nb_pos*i);
-    [Rfi,pfi] = plux(model.gc_X{gc(i)} * X0{model.gc_parent(gc(i))}); % origin to foot translation, world coordinates
+    [Rf{i}, pfi] = plux(model.gc_X{gc(i)} * X0{model.gc_parent(gc(i))}); % origin to foot translation, world coordinates
     pf(indx) = pfi(model.pos_idx);
 end
-Rf = Rfi;
+
+if length(gc) == 1
+    Rf = Rf{1};
+end
