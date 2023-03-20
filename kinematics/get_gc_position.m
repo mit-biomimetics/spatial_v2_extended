@@ -23,9 +23,9 @@ switch class(q)
         error('Invalid variable type for "q"')
 end
 
-X0{model.fb_dim} = Xup{model.fb_dim};
+X0{model.NB_fb} = Xup{model.NB_fb};
 
-for i = (model.fb_dim + 1):model.NB
+for i = (model.NB_fb + 1):model.NB
     X0{i} = Xup{i} * X0{model.parent(i)}; % propagate xform from origin
 end
 

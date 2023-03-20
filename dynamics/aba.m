@@ -20,7 +20,7 @@ function qdd = aba(model, q, qd, tau, f_ext)
     %% 2D or 3D
     [Xup, S] = fwd_kin_fb(model, q);
     Xa = Xup;
-    dim_fb = model.fb_dim;
+    dim_fb = model.NB_fb;
 
     %% Forward Kinematics
     a_grav = [0 0 0 model.gravity]';

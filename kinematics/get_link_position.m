@@ -7,9 +7,9 @@ function [p_link,R_link,X0_link] = get_link_position( model, q, link_idx)
 Xup = get_spatial_transforms(model, q);
 
 
-X0{model.fb_dim} = Xup{model.fb_dim};
+X0{model.NB_fb} = Xup{model.NB_fb};
 
-for i = (model.fb_dim + 1):model.NB
+for i = (model.NB_fb + 1):model.NB
     X0{i} = Xup{i} * X0{model.parent(i)};                      % propagate xform from origin
     [R0{i}, p0{i}] = plux(X0{i});                                % rotation from origin, translation from origin
 end

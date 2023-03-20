@@ -12,7 +12,8 @@ end
 
 %% 2D or 3D
 [Xup, S] = fwd_kin_fb(model, q);
-dim_fb = model.fb_dim;
+dim_fb = model.NB_fb;
+
 %% Forward Kinematics
 for i = (dim_fb + 1):model.NB
     [ XJ, S{i} ] = jcalc( model.jtype{i}, q(i) );

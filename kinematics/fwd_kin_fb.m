@@ -27,10 +27,10 @@ end
 
 
 Xup = cell(model.NB, 1);
-for i = 1:(model.fb_dim - 1)
+for i = 1:(model.NB_fb - 1)
     Xup{i} = zeros(6,6);
 end
 
 R_world_to_body = rpyToRotMat(rpy)';
-Xup{model.fb_dim} = [R_world_to_body zeros(3,3);...
+Xup{model.NB_fb} = [R_world_to_body zeros(3,3);...
     -R_world_to_body*skew(tr) R_world_to_body];

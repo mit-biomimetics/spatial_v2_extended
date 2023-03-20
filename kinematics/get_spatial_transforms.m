@@ -15,7 +15,7 @@ function Xup = get_spatial_transforms(model, q)
         [q] = confVecToCell(model,q);
     end
     
-    for i = (model.fb_dim + 1):model.NB
+    for i = (model.NB_fb + 1):model.NB
         [ XJ, ~ ] = jcalc( model.jtype{i}, q{i} );
         Xup{i} = XJ * model.Xtree{i};
     end
