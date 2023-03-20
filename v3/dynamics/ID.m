@@ -9,7 +9,7 @@ function  [tau, out] = ID( model, q, qd, qdd, f_ext )
 % omitted if there are no external forces.  The format of f_ext is
 % explained in the source code of apply_external_forces.
 
-if ~isfield(model,'nq')
+if ~isfield(model,'nq') && ~isprop(model,'nq')
     model = postProcessModel(model);
 end
 

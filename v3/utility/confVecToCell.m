@@ -3,7 +3,7 @@ function [q_cell, v_cell, vd_cell, vd2_cell] = confVecToCell(model,q,v,vd, vd2)
     qj = 0;
     vj = 0;
     
-    if ~isfield(model,'nq')
+    if ~isfield(model,'nq') && ~isprop(model,'nq')
         model.nq = ones(model.NB,1);
         model.nv = ones(model.NB,1);
     end

@@ -1,6 +1,6 @@
 function  J = BodyJacobian(model, q, body_num, Xend)
 
-if ~isfield(model,'nq')
+if ~isfield(model,'nq') && ~isprop(model,'nq')
     model = postProcessModel(model);
 end
 if ~iscell(q)

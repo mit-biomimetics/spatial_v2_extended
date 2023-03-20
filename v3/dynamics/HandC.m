@@ -14,7 +14,7 @@ function  [H,C,info] = HandC( model, q, qd, f_ext )
 
 a_grav = get_gravity(model);
 
-if ~isfield(model,'nq')
+if ~isfield(model,'nq') && ~isprop(model,'nq')
     model = postProcessModel(model);
 end
 if ~iscell(q) || ~iscell(qd)
