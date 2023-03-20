@@ -70,3 +70,14 @@ switch code
   otherwise
     error( 'unrecognised joint code ''%s''', code );
 end
+
+%   if isa(q, 'casadi.MX')
+% % 
+%     S = casadi.MX(sparse(S));
+%     % Xj = sparsify(Xj);
+%     % Xj = casadi.MX(sparse(Xj));
+%   elseif isa(q, 'casadi.SX')
+%     S = casadi.SX(sparse(S));
+%     Xj = Xj.sparsify();
+%     % Xj = casadi.SX(sparse(Xj));
+%   end

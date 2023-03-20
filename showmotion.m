@@ -1,4 +1,4 @@
-function  showmotion( model, t_data, q_data )
+function  success = showmotion( model, t_data, q_data, custom_terrain)
 
 % SHOWMOTION  3D animation of a robot or other mechanical system
 % showmotion(model,t_data,q_data)  presents an interactive 3D animation of
@@ -44,6 +44,8 @@ if nargin == 0				% check argument list
   bad_arg_list = 1;
 elseif isstruct(model)
   bad_arg_list = ( ~isfield(model,'NB') || nargin == 2 );
+elseif isobject(model)
+  bad_arg_list = ( ~isprop(model,'NB') || nargin == 2 );
 elseif ~ischar(model)
   bad_arg_list = 1;
 elseif strcmp(model,'save')
@@ -107,10 +109,18 @@ if ndims(q_data) == 3 && size(q_data,2) == 1
   q_data = tmp;
 end
 
-if ndims(q_data) ~= 2 || size(q_data,1) ~= model.NB || ...
+if ndims(q_data) ~= 2 || size(q_data,1) ~= model.NQ || ...
       size(q_data,2) ~= length(t_data)
   error( ['dimensions of third argument must be (np)x(nt) or ' ...
-	  '(np)x1x(nt) where np=model.NB and nt=length(t_data)'] );
+	  '(np)x1x(nt) where np=model.NQ and nt=length(t_data)'] );
+end
+
+if exist('custom_terrain', 'var')
+    ShoMoData.custom_terrain = custom_terrain;
+else
+    if (isfield(ShoMoData, 'custom_terrain'))
+        ShoMoData = rmfield(ShoMoData, 'custom_terrain');
+    end
 end
 
 ShoMoData.model = model;
@@ -139,7 +149,7 @@ if ~ishandle(ShoMoData.fig)		% no current figure exists
   fig = figure( 'Renderer', 'OpenGL', ...
 		'Color', 'k', ...
 		'HandleVisibility', 'callback', ...
-		'Name', 'ShowMotion', ...
+		'Name', 'Animation', ...
 		'NumberTitle', 'off', ...
 		'MenuBar', 'none', ...
 		'DeleteFcn', @deletefn, ...
@@ -187,6 +197,7 @@ end
 updatepanel;
 
 drawnow;
+success = true;
 end					% because there are nested functions
 
 
@@ -846,12 +857,20 @@ facenormals = [ 0 0 1;	0 -1 0;  1 0 0;  0 1 0;  -1 0 0;  0 0 -1 ];
 
 h = hggroup( 'Parent', parent );
 
+if length(colour) > 3
+    alpha = colour(4);
+    colour = colour(1:3);
+else
+    alpha = 1.;
+end
+
 for i = 1:6
   patch( 'Parent', h, ...
 	 'Vertices', vertices(faces(i,:),:), ...
 	 'VertexNormals', ones(4,1)*facenormals(i,:), ...
 	 'Faces', [1 2 3 4], ...
 	 'FaceColor', colour, ...
+     'FaceAlpha', alpha, ...
 	 'EdgeColor', 'none', ...
 	 'FaceLighting', 'gouraud', ...
 	 'BackFaceLighting', 'unlit' );
@@ -1125,6 +1144,13 @@ function  h = cylinder( parent, spine, radius, colour, facets )
 % 2. I put a vertex at the centre of each end face to avoid asymmetrical
 %    lighting artifacts.
 
+if length(colour) > 3
+    alpha = colour(4);
+    colour = colour(1:3);
+else
+    alpha = 1;
+end
+
 if nargin < 5
   facets = 24;
 end
@@ -1214,6 +1240,7 @@ patch( 'Parent', h, ...
        'VertexNormals', topnormals, ...
        'Faces', topfaces, ...
        'FaceColor', colour, ...
+       'FaceAlpha', alpha, ...
        'EdgeColor', 'none', ...
        'FaceLighting', 'gouraud', ...
        'BackFaceLighting', 'unlit' );
@@ -1223,6 +1250,7 @@ patch( 'Parent', h, ...
        'VertexNormals', botnormals, ...
        'Faces', botfaces, ...
        'FaceColor', colour, ...
+       'FaceAlpha', alpha, ...
        'EdgeColor', 'none', ...
        'FaceLighting', 'gouraud', ...
        'BackFaceLighting', 'unlit' );
@@ -1232,6 +1260,7 @@ patch( 'Parent', h, ...
        'VertexNormals', cylnormals, ...
        'Faces', cylfaces, ...
        'FaceColor', colour, ...
+       'FaceAlpha', alpha, ...
        'EdgeColor', 'none', ...
        'FaceLighting', 'gouraud', ...
        'BackFaceLighting', 'unlit' );
@@ -1276,11 +1305,11 @@ function  [t_data,q_data] = default_t_q_data( model )
 % given model by ramping each joint variable, one at a time, from 0 to 1
 % and back to 0, at a rate of one variable per second.
 
-t_data = 0:0.5:model.NB;
+t_data = 0:0.5:model.NQ;
 
-q_data = zeros( model.NB, 2*model.NB+1 );
+q_data = zeros( model.NQ, 2*model.NQ+1 );
 
-q_data(:,2*(1:model.NB)) = eye(model.NB);
+q_data(:,2*(1:model.NQ)) = eye(model.NQ);
 
 end
 
@@ -1826,7 +1855,9 @@ function handles = makedrawing( model, parent )
 % makedrawing does not initialize these matrices.  Use the function
 % reposition(q) to set these matrices to appropriate values.
 
-if ~isfield( model, 'appearance' )
+global ShoMoData;
+
+if ~isfield( model, 'appearance' ) && ~isprop( model, 'appearance' )
   error( 'model has no appearance field' );
 else
   app = model.appearance;
@@ -1856,8 +1887,18 @@ context.facets = 24;
 context.colour = defaultcolour(0);
 context.vertices = [];
 
-if isfield( app, 'base' )
-  add_drawing( app.base, context, base, 0 );
+if isfield(ShoMoData, 'custom_terrain')
+    patch( 'Parent', base, ...
+	   'Vertices', ShoMoData.custom_terrain.Vertices, ...
+	   'Faces', ShoMoData.custom_terrain.Faces, ...
+	   'FaceColor', [1 1 1], ...
+	   'EdgeColor', 'none', ...
+	   'FaceLighting', 'flat', ...
+	   'BackFaceLighting', 'reverselit' );
+else
+    if isfield( app, 'base' )
+      add_drawing( app.base, context, base, 0 );
+    end
 end
 
 for i = 1:model.NB
@@ -1865,6 +1906,14 @@ for i = 1:model.NB
   context.colour = defaultcolour(i);
   add_drawing( app.body{i}, context, handles(i), i );
 end
+
+% Need to add drawing here for floor, surface with patch of triangles, look
+% at triangle documentation
+% add_drawing({'triangles', 10}, context, base, 0)
+
+
+% 	   'FaceColor', ones(length(test.Faces, 1)), ...
+% 	   'VertexNormals', uNorms, ...
 end
 
 
@@ -1969,7 +2018,7 @@ while i <= N
       end
     
     case 'colour'
-      if size(arg1,2) ~= 3 || any(any(arg1<0)) || any(any(arg1>1))
+      if size(arg1,2) > 4 || size(arg1,2) < 3 || any(any(arg1<0)) || any(any(arg1>1))
 	error( 'invalid RGB colour(s) %s', location(i+1) );
       else
 	context.colour = arg1;
@@ -2494,8 +2543,15 @@ function  reposition( q )
   model = ShoMoData.model;
   handles = ShoMoData.handles;
 
+  if ~isfield(model,'nq') && ~isprop(model,'nq')
+    model = postProcessModel(model);
+  end
+  if ~iscell(q)
+    q = confVecToCell(model,q);
+  end
+  
   for i = 1:model.NB
-    XJ = jcalc( model.jtype{i}, q(i) );
+    XJ = jcalc( model.jtype{i}, q{i} );
     Xa{i} = XJ * model.Xtree{i};
     if model.parent(i) ~= 0
       Xa{i} = Xa{i} * Xa{model.parent(i)};
