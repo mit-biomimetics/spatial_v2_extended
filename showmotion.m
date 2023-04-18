@@ -1895,6 +1895,7 @@ if isfield(ShoMoData, 'custom_terrain')
 	   'EdgeColor', 'none', ...
 	   'FaceLighting', 'flat', ...
 	   'BackFaceLighting', 'reverselit' );
+    add_drawing( app.base, context, base, 0 );
 else
     if isfield( app, 'base' )
       add_drawing( app.base, context, base, 0 );
