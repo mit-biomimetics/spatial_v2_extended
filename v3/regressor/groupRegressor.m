@@ -1,5 +1,10 @@
 function Y_group = groupRegressor(a,v,w,factorFunction)
 
+flag = 1;
+if (isa(v,'sym'))
+    flag = 0;
+end
+
 if nargin <4
     factorFunction = @ (I,v) factorFunctions(I,v);
 end
@@ -20,18 +25,20 @@ rows = @(i) group_inds(i,6);
 cols = @(i) group_inds(i,10);
 
 % Hotfix for symbolic REMOVE
-Y_group = zeros(6*N, 10*N);
-for i = 1:N
-    Y_group( rows(i), cols(i) ) = individualRegressor(a(:,i), v(:,i),w(:,i), factorFunction) ;
+if flag
+    Y_group = zeros(6*N, 10*N);
+    for i = 1:N
+        Y_group( rows(i), cols(i) ) = individualRegressor(a(:,i), v(:,i),w(:,i), factorFunction) ;
+    end
+else
+    Y_group = cell(N,N); % REMOVE this whole section
+    for ii = 1:N
+       for jj = 1:N
+           Y_group{ii,jj} = zeros(6,10);
+       end
+    end
+    for i = 1:N
+       Y_group{i,i} = individualRegressor(a(:,i), v(:,i),w(:,i), factorFunction) ;
+    end
+    Y_group = cell2sym(Y_group);
 end
-
-%Y_group = cell(N,N); % REMOVE this whole section
-%for ii = 1:N
-%    for jj = 1:N
-%        Y_group{ii,jj} = zeros(6,10);
-%    end
-%end
-%for i = 1:N
-%    Y_group{i,i} = individualRegressor(a(:,i), v(:,i),w(:,i), factorFunction) ;
-%end
-%Y_group = cell2sym(Y_group);

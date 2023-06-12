@@ -1,4 +1,8 @@
 function [Y, W] = RegressorClassical( model, q, qd,qdd)
+flag = 1;
+if (isa(q,'sym'))
+    flag = 0;
+end
 model = model.postProcessModel();
 a_grav = model.getGravity();
 if ~iscell(q)
@@ -7,8 +11,11 @@ if ~iscell(q)
 end
 
 % Hotfix for symbolic REMOVE
-Y = zeros(model.NV, model.N_RB*10);
-%Y = sym(zeros(model.NV, model.N_RB*10)); % REMOVE
+if flag
+    Y = zeros(model.NV, model.N_RB*10);
+else
+    Y = sym(zeros(model.NV, model.N_RB*10)); % REMOVE
+end
 v = {};
 a = {};
 W = {};
@@ -44,5 +51,7 @@ for i = 2:size(W,1)
         W{i,j} = zeros( size(W{i,i},1), size(W{j,j},2) );
     end
 end
-W = cell2mat(W);
-
+% Hotfix for symbolic REMOVE
+if flag
+    W = cell2mat(W); % INSERT BACK IN
+end
