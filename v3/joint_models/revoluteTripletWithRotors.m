@@ -37,7 +37,7 @@ classdef revoluteTripletWithRotors
             
             qr1 = n1*q(1);
             qr2 = n2*q(2) + gr2*b1*q(1);
-            qr3 = n3*q(3) - gr3*b1*q(1) - gr3*b2*q(2);
+            qr3 = -n3*q(3) + gr3*b1*q(1) + gr3*b2*q(2);
 
             [XR1 , Sr1 ] = jcalc( ['R' obj.rotorAxis{1}], qr1 );
             [XR2 , Sr2 ] = jcalc( ['R' obj.rotorAxis{2}], qr2 );
