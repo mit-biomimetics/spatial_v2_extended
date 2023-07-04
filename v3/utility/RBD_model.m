@@ -25,6 +25,8 @@ classdef RBD_model
         subtree_vinds
         successor_vinds
         param_inds
+        phi
+        rbd_inds % indices matching [links, rotors] order to spatial lib format
     end
     
     methods

@@ -14,6 +14,7 @@ j = body_num;
 while j > 0
     [ Xup, S ] = model.joint{j}.kinematics( model.Xtree{j} , q{j} );
     jj = model.vinds{j};
+
     J(:, jj) = X * S;
     if model.parent(j) > 0
         X = X *  Xup;

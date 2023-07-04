@@ -26,6 +26,9 @@ U10_width = 0.035;
 link_masses = [2.93, 1.74, 4.99, 0.82, 0.17, 0.65]; % added 600g for gripper to last mass
 rotor_masses = [0.1, 0.06]; % TODO: update these from CAD? U10 rotor is small on purpose for now
 
+% NOTE: data from motors 1 and 3 will need to have sign
+% flipped to align with model joint definitions!!!
+
 % link lengths/offsets (from URDF) (first is at origin, then from prev. joint origin)
 joint_offsets = [0, 0, 0; %0, 0, 0.051;
                  0, 0, 0.106;

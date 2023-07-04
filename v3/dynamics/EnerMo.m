@@ -26,8 +26,8 @@ for i = 1:model.NB
   KE(i) = 0.5 * v{i}.' * hc{i};
 end
 
-ret.Itot = q{1}(1)*0 + zeros(size(Ic{1}));
-ret.htot = q{1}(1)*0 + zeros(size(hc{1}));
+ret.Itot = q{1}(1)*0 + zeros(6,6); %size(Ic{1})); % TODO: should this always be 6x6?
+ret.htot = q{1}(1)*0 + zeros(6,1); %size(hc{1})); % TODO: should this always be 6x1?
 
 for i = model.NB:-1:1
   p = model.parent(i);
